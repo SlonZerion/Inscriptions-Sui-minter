@@ -76,18 +76,25 @@ def main():
     input.send_keys(REPEAT)
     sleep(random.uniform(1,2))
     input.send_keys(Keys.ENTER)
+    main_page = driver.current_window_handle
 
     count_approve = 0
     while True:
         try:
             WebDriverWait(driver, 30).until(EC.number_of_windows_to_be(2))
-            # sleep(random.uniform(1,2))
+            windows = driver.window_handles
+            desired_window_title = "Sui Wallet"
+            for window in windows:
+                # Переключение на окно
+                driver.switch_to.window(window)
+                
+                # Проверка заголовка окна
+                if driver.title == desired_window_title:
+                    break
             for t in range(MAX_TRIES):
                 try:
-                    driver.switch_to.window(driver.window_handles[-1])
-                    approve = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, '//button/div[text()="Approve"]')))
+                    approve = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, '//button/div[text()="Approve"]')))
                     action.move_to_element(approve).pause(1).move_to_element(approve).click().perform()
-                    # sleep(random.uniform(1,2))
                     count_approve+=1
                     logger.success(f'Approve {count_approve}')
                     break
@@ -98,7 +105,7 @@ def main():
                 break
             # ждем 1-2 минуты для при получении лимита на минт
             try:
-                driver.switch_to.window(driver.window_handles[0])
+                driver.switch_to.window(main_page)
                 wait_next = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//button[text()="Next"]')))
                 logger.warning(f'Получено ограничение на минт ждем 1 минуту')
                 sleep(random.uniform(50,70))
