@@ -87,7 +87,6 @@ def main():
             for window in windows:
                 # Переключение на окно
                 driver.switch_to.window(window)
-                
                 # Проверка заголовка окна
                 if driver.title == desired_window_title:
                     break
