@@ -16,19 +16,12 @@ from config import *
 
 def get_chromedriver():
     options = ChromeOptions() 
-    options.add_argument("--disable-blink-features=AutomationControlled")# отключаем режим webdriver
-    options.add_argument("--log-level=3") #отключает вывод webdriver selenium
+    options.add_argument("--disable-blink-features=AutomationControlled") # отключаем режим webdriver
+    options.add_argument("--log-level=3") # отключаем вывод логов webdriver
     options.add_extension('Sui Wallet 23.12.12.0.crx')
     options.add_argument("--start-maximized")
-    # options.add_argument("--headless")
-    
-
-    driver = webdriver.Chrome(
-        options=options,
-    )
-
+    driver = webdriver.Chrome(options=options)
     driver.set_page_load_timeout(90)
-    # driver.set_window_size(1920,1080) 
     return driver
 
 
@@ -88,20 +81,30 @@ def main():
     while True:
         try:
             WebDriverWait(driver, 30).until(EC.number_of_windows_to_be(2))
-            sleep(random.uniform(1,2))
+            # sleep(random.uniform(1,2))
             for t in range(MAX_TRIES):
                 try:
                     driver.switch_to.window(driver.window_handles[-1])
-                    approve = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//button/div[text()="Approve"]')))
+                    approve = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, '//button/div[text()="Approve"]')))
                     action.move_to_element(approve).pause(1).move_to_element(approve).click().perform()
-                    sleep(random.uniform(1,2))
+                    # sleep(random.uniform(1,2))
                     count_approve+=1
-                    logger.success(f'approve {count_approve}')
+                    logger.success(f'Approve {count_approve}')
                     break
                 except:
                     pass
         except:
-            break
+            if count_approve >= REPEAT:
+                break
+            # ждем 1-2 минуты для при получении лимита на минт
+            try:
+                driver.switch_to.window(driver.window_handles[0])
+                wait_next = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//button[text()="Next"]')))
+                logger.warning(f'Получено ограничение на минт ждем 1 минуту')
+                sleep(random.uniform(50,70))
+                action.move_to_element(wait_next).pause(1).move_to_element(wait_next).click().perform()
+            except:
+                pass
 
     logger.info("FINAL")
     
