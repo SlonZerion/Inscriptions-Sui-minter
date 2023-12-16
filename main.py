@@ -1,6 +1,4 @@
-import linecache
 import random
-import sys
 from termcolor import cprint
 from art import text2art
 from time import sleep
@@ -22,27 +20,21 @@ def get_chromedriver():
     options.add_argument("--log-level=3") #отключает вывод webdriver selenium
     options.add_extension('Sui Wallet 23.12.12.0.crx')
     options.add_argument("--start-maximized")
+    # options.add_argument("--headless")
+    
 
     driver = webdriver.Chrome(
         options=options,
     )
 
     driver.set_page_load_timeout(90)
-    
+    # driver.set_window_size(1920,1080) 
     return driver
-
-
-def get_error_message():
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    file_name = exc_traceback.tb_frame.f_code.co_filename
-    line_number = exc_traceback.tb_lineno
-    line = linecache.getline(file_name, line_number).strip()
-    return f"{exc_type.__name__}\nФайл: {file_name}, строка {line_number}: {line}"
 
 
 def main():
     logger.add('log.log', format="<yellow>{time:YYYY-MM-DD at HH:mm:ss}</yellow> | <level>{level}</level>: <level>{message}</level>")
-    logger.warning("START")
+    logger.info("START")
 
     driver = get_chromedriver()
     driver.get('chrome-extension://opcgpfmipidbgpenhmajoajpbobppdil/ui.html#/accounts/import-private-key')
@@ -95,7 +87,7 @@ def main():
     count_approve = 0
     while True:
         try:
-            WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
+            WebDriverWait(driver, 30).until(EC.number_of_windows_to_be(2))
             sleep(random.uniform(1,2))
             for t in range(MAX_TRIES):
                 try:
@@ -104,12 +96,13 @@ def main():
                     action.move_to_element(approve).pause(1).move_to_element(approve).click().perform()
                     sleep(random.uniform(1,2))
                     count_approve+=1
-                    logger.success(count_approve)
+                    logger.success(f'approve {count_approve}')
                     break
                 except:
                     pass
         except:
             break
+
     logger.info("FINAL")
     
 
